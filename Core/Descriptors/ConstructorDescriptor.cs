@@ -8,6 +8,6 @@ namespace HandyReflection.Core.Descriptors
 {
   public class ConstructorDescriptor : ReflectionDescriptorBase
   {
-    public ConstructorInfo ConstructorInfo { get; set; }
+    public ConstructorInfo ConstructorInfo { get; internal set; }
   }
 }

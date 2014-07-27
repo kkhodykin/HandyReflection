@@ -8,6 +8,6 @@ namespace HandyReflection.Core.Descriptors
 {
   public class MethodDescriptor : MemberDescriptorBase
   {
-    public MethodInfo MethodInfo { get; set; }
+    public MethodInfo MethodInfo { get; internal set; }
   }
 }

@@ -46,7 +46,7 @@
     <Compile Include="Accessors\MethodAccessor.cs" />
     <Compile Include="Accessors\PropertyAccessor.cs" />
     <Compile Include="DependencyInjection\DefaultDependencyResolver.cs" />
-    <Compile Include="Descriptors\AttributeDescriptor.cs" />
+    <Compile Include="Descriptors\AttributesDescriptor.cs" />
     <Compile Include="Descriptors\ConstructorDescriptor.cs" />
     <Compile Include="Descriptors\MemberDescriptor.cs" />
     <Compile Include="Descriptors\MethodDescriptor.cs" />
@@ -56,6 +56,8 @@
     <Compile Include="Exceptions\MethodNotFoundException.cs" />
     <Compile Include="Exceptions\PropertyNotFoundException.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
+    <Compile Include="Expressions\MemberBaseVisitor.cs" />
+    <Compile Include="Expressions\ReflectionVisitor.cs" />
     <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PropertyExtensions.cs" />
@@ -72,7 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
-    <Folder Include="ExpressionVisitor\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

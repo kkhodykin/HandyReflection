@@ -8,6 +8,6 @@ namespace HandyReflection.Core.Descriptors
 {
   public class PropertyDescriptor : MemberDescriptorBase
   {
-    public PropertyInfo PropertyInfo { get; set; }
+    public PropertyInfo PropertyInfo { get; internal set; }
   }
 }
