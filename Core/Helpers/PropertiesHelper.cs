@@ -33,7 +33,7 @@ namespace Leverate.Reflection
 
     public static PropertyInfo GetPropertyInfo(this Type type, string propertyName)
     {
-      return MemberCache.Get<PropertyInfo>(type, propertyName).SingleOrDefault();
+      return MemberCache.Default.Get<PropertyInfo>(type, propertyName).SingleOrDefault();
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace Leverate.Reflection
 
     public static Func<TObject, TProperty> GetGetter<TObject, TProperty>(this Type type, string propertyName)
     {
-      var property = MemberCache.Get<PropertyInfo>(type, propertyName).FirstOrDefault();
+      var property = MemberCache.Default.Get<PropertyInfo>(type, propertyName).FirstOrDefault();
 
       return property.GetGetter<TObject, TProperty>();
     }

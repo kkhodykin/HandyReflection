@@ -27,38 +27,45 @@ namespace Leverate.Reflection
     }
   }
 
-  static class MemberCache
+  internal class MemberCache
   {
     private static readonly Dictionary<Type, MemberTypes> TypeMemberTypeMap = new Dictionary<Type, MemberTypes>
-    {
-      {typeof(ConstructorInfo), MemberTypes.Constructor},
-      {typeof(PropertyInfo), MemberTypes.Property},
-      {typeof(MethodInfo), MemberTypes.Method},
-      {typeof(FieldInfo), MemberTypes.Field},
-    };
+        {
+          {typeof(ConstructorInfo), MemberTypes.Constructor},
+          {typeof(PropertyInfo), MemberTypes.Property},
+          {typeof(MethodInfo), MemberTypes.Method},
+          {typeof(FieldInfo), MemberTypes.Field},
+        };
 
     private static readonly ConcurrentDictionary<string, IEnumerable<MemberInfo>> Cache = new ConcurrentDictionary<string, IEnumerable<MemberInfo>>();
 
-    public static IEnumerable<MemberInfo> Get(MemberDescriptor descriptor)
+    private static readonly Lazy<MemberCache> DefaultInstance = new Lazy<MemberCache>(() => new MemberCache());
+
+    public static MemberCache Default
+    {
+      get { return DefaultInstance.Value; }
+    }
+
+    public IEnumerable<MemberInfo> Get(MemberDescriptor descriptor)
     {
       return SplitCacheRequest(descriptor).SelectMany(x => Cache.GetOrAdd(x.Key, x.Value));
     }
 
-    public static IEnumerable<TMember> Get<TMember>(MemberDescriptor descriptor)
+    public IEnumerable<TMember> Get<TMember>(MemberDescriptor descriptor)
       where TMember : MemberInfo
     {
       return (Get(descriptor) ?? Enumerable.Empty<TMember>()).OfType<TMember>();
     }
 
 
-    public static IEnumerable<TMember> Get<TMember>(Type type, string name)
+    public IEnumerable<TMember> Get<TMember>(Type type, string name)
       where TMember : MemberInfo
     {
       return
         Get<TMember>(new MemberDescriptor(type, name)
         {
           MemberTypes =
-            TypeMemberTypeMap.ContainsKey(typeof (TMember)) ? TypeMemberTypeMap[typeof (TMember)] : MemberTypes.All
+            TypeMemberTypeMap.ContainsKey(typeof(TMember)) ? TypeMemberTypeMap[typeof(TMember)] : MemberTypes.All
         });
     }
 

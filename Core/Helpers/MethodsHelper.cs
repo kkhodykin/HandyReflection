@@ -27,7 +27,6 @@ namespace Leverate.Reflection
     {
       var matchingMethod = FindMethodInternal(thisType, name, bindingFlags, parameterTypes);
       if (matchingMethod != null || !thisType.IsInterface) return matchingMethod;
-
       foreach (var interfaceType in thisType.GetInterfaces())
       {
         matchingMethod = FindMethodInternal(interfaceType, name, bindingFlags, parameterTypes);
@@ -40,7 +39,7 @@ namespace Leverate.Reflection
 
     private static MethodInfo FindMethodInternal(Type type, string name, BindingFlags bindingFlags, params Type[] parameterTypes)
     {
-      return MemberCache.Get<MethodInfo>(new MemberDescriptor(type, name)
+      return MemberCache.Default.Get<MethodInfo>(new MemberDescriptor(type, name)
       {
         BindingFlags = bindingFlags,
         MemberTypes = MemberTypes.Method
