@@ -77,29 +77,33 @@ namespace HandyReflection.Core.Tests
     [ExpectedException(typeof(MemberNotFoundException))]
     public void SetGetOnlyProperty_WithException()
     {
+      throw new NotImplementedException();
     }
 
     [TestMethod]
     public void SetPropertyWithPrivateSet()
     {
+      throw new NotImplementedException();
     }
 
     [TestMethod]
     [ExpectedException(typeof(PropertyNotFoundException), AllowDerivedTypes = true)]
     public void SetNonExistingProperty_WithException()
     {
+      throw new NotImplementedException();
     }
 
     [TestMethod]
     public void SetExistingPropertyGeneric()
     {
+      throw new NotImplementedException();
     }
 
     [TestMethod]
     [ExpectedException(typeof(PropertyNotFoundException))]
     public void SetNonExistingPropertyGeneric_WithException()
     {
-      
+      throw new NotImplementedException();
     }
   }
 }
