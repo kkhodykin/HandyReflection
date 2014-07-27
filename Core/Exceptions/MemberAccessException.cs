@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HandyReflection.Core.Tests
+namespace HandyReflection.Core.Exceptions
 {
-  class SampleClass
+  public class MemberAccessException : Exception
   {
   }
 }
