@@ -55,8 +55,18 @@
   <ItemGroup>
     <Compile Include="MemberCacheTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleClass.cs" />
+    <Compile Include="PropertyExtensionsTests.cs" />
+    <Compile Include="SampleClasses\Child.cs" />
+    <Compile Include="SampleClasses\GrandChild.cs" />
+    <Compile Include="SampleClasses\Parent.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{eb453085-5712-4b5b-837a-b65f2de5acd4}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
