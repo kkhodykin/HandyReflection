@@ -6,7 +6,12 @@ using HandyReflection.Core.Descriptors;
 
 namespace HandyReflection.Core.Accessors
 {
-  internal interface IMemberAccessor<TDescriptor> : IQueryable<TDescriptor> where TDescriptor : ReflectionDescriptorBase
+  public interface IAccessor
+  {
+    IAccessor SetInstance(object instance);
+  }
+
+  internal interface IMemberAccessor<TDescriptor> : IAccessor, IQueryable<TDescriptor> where TDescriptor : ReflectionDescriptorBase
   {
     TAccessor SetInstance<TAccessor>(object instance)where TAccessor : IMemberAccessor<TDescriptor>;
     bool HasInstance();
@@ -19,8 +24,5 @@ namespace HandyReflection.Core.Accessors
 
   class MemberAccessor : MemberAccessorBase<MemberDescriptor>, IMemberAccessor
   {
-    public MemberAccessor(object instance) : base(instance)
-    {
-    }
   }
 }

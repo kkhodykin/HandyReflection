@@ -27,11 +27,6 @@ namespace HandyReflection.Core.Accessors
 
   class MethodAccessor : MemberAccessorBase<MethodDescriptor>, IMethodAccessor
   {
-    public MethodAccessor(object instance):base(instance)
-    {
-      
-    }
-
     public object CallFunc(params object[] arguments)
     {
       throw new NotImplementedException();

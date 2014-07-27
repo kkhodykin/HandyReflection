@@ -39,21 +39,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Accessors\AccessorProvider.cs" />
     <Compile Include="Accessors\ConstructorAccessor.cs" />
     <Compile Include="Accessors\MemberAccessor.cs" />
     <Compile Include="Accessors\MemberAccessorBase.cs" />
     <Compile Include="Accessors\MethodAccessor.cs" />
     <Compile Include="Accessors\PropertyAccessor.cs" />
+    <Compile Include="DependencyInjection\DefaultDependencyResolver.cs" />
     <Compile Include="Descriptors\AttributeDescriptor.cs" />
     <Compile Include="Descriptors\ConstructorDescriptor.cs" />
     <Compile Include="Descriptors\MemberDescriptor.cs" />
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PropertyDescriptor.cs" />
+    <Compile Include="Exceptions\MemberAccessException.cs" />
+    <Compile Include="Exceptions\MemberNotFoundException.cs" />
+    <Compile Include="Exceptions\MethodNotFoundException.cs" />
+    <Compile Include="Exceptions\PropertyNotFoundException.cs" />
+    <Compile Include="Exceptions\TypeMismatchException.cs" />
+    <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
-    <Compile Include="Extensions\QueryableExtensions.cs" />
+    <Compile Include="Extensions\PropertyExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="Filters\IFilterFactory.cs" />
+    <Compile Include="Filters\FilterFactory.cs" />
     <Compile Include="Filters\MemberFilter.cs" />
+    <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="MemberAccessBuilder.cs" />
     <Compile Include="MemberCache.cs" />
     <Compile Include="Helpers\MethodsHelper.cs" />
@@ -62,6 +71,7 @@
     <Compile Include="Helpers\TypeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Configuration\" />
     <Folder Include="ExpressionVisitor\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

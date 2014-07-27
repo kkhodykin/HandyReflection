@@ -14,20 +14,20 @@ namespace HandyReflection.Core.Accessors
     private IQueryable<TDescriptor> _queryable = new List<TDescriptor>().AsQueryable();
     public object Instance { get; private set; }
 
-    protected MemberAccessorBase(object instance)
-    {
-      Instance = instance;
-    }
-
     public TAccessor SetInstance<TAccessor>(object instance)where TAccessor : IMemberAccessor<TDescriptor>
     {
       Instance = instance;
       return (TAccessor)(IMemberAccessor<TDescriptor>)this;
     }
 
-    public bool HasInstance()
+    public IAccessor SetInstance(object instance)
     {
       throw new NotImplementedException();
+    }
+
+    public bool HasInstance()
+    {
+      return Instance != null;
     }
 
     public IEnumerator<TDescriptor> GetEnumerator()

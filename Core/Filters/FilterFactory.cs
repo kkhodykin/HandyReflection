@@ -20,5 +20,4 @@ namespace HandyReflection.Core.Filters
       
     }
   }
-
 }

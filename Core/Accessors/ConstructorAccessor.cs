@@ -13,10 +13,6 @@ namespace HandyReflection.Core.Accessors
 
   class ConstructorAccessor : MemberAccessorBase<ConstructorDescriptor>, IConsructorAccessor
   {
-    public ConstructorAccessor(object instance) : base(instance)
-    {
-    }
-
     public TInstance Instantiate<TInstance>(params object[] parameters)
     {
       throw new NotImplementedException();

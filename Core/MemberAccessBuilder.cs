@@ -17,48 +17,50 @@ namespace HandyReflection.Core
     IQueryable<MemberDescriptor> Members();
   }
 
-  internal class MemberAccessBuilder:IMemberAccessBuilder
+  internal class MemberAccessBuilder : IMemberAccessBuilder
   {
+    private readonly IAccessorProvider _accessorProvider;
     private readonly object _instance;
 
-    public MemberAccessBuilder()
+    public MemberAccessBuilder(IAccessorProvider accessorProvider)
     {
-      
+      _accessorProvider = accessorProvider;
     }
 
-    public MemberAccessBuilder(object instance)
+    public MemberAccessBuilder(IAccessorProvider accessorProvider, object instance)
+      : this(accessorProvider)
     {
       _instance = instance;
     }
 
     public IQueryable<MethodDescriptor> Method(string methodName)
     {
-      return new MethodAccessor(_instance).Where(x => x.Name == methodName);
+      return _accessorProvider.GetAccessor<IMethodAccessor>().Where(x => x.Name == methodName);
     }
 
     public IQueryable<MethodDescriptor> Methods()
     {
-      return new MethodAccessor(_instance);
+      return _accessorProvider.GetAccessor<IMethodAccessor>();
     }
 
     public IQueryable<PropertyDescriptor> Property(string propertyName)
     {
-      return new PropertyAccessor(_instance).Where(x => x.Name == propertyName);
+      return _accessorProvider.GetAccessor<IPropertyAccessor>().Where(x => x.Name == propertyName);
     }
 
     public IQueryable<PropertyDescriptor> Properties()
     {
-      return new PropertyAccessor(_instance);
+      return _accessorProvider.GetAccessor<IPropertyAccessor>();
     }
 
     public IQueryable<MemberDescriptor> Member(string memberName)
     {
-      return new MemberAccessor(_instance).Where(x => x.Name == memberName);
+      return _accessorProvider.GetAccessor<IMemberAccessor>().Where(x => x.Name == memberName);
     }
 
     public IQueryable<MemberDescriptor> Members()
     {
-      return new MemberAccessor(_instance);
+      return _accessorProvider.GetAccessor<IMemberAccessor>();
     }
   }
 }

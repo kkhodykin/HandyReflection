@@ -15,10 +15,6 @@ namespace HandyReflection.Core.Accessors
 
   class PropertyAccessor : MemberAccessorBase<PropertyDescriptor>, IPropertyAccessor
   {
-    public PropertyAccessor(object instance) : base(instance)
-    {
-    }
-
     public void Set(object value)
     {
       throw new NotImplementedException();
