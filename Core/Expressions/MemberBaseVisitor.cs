@@ -66,9 +66,7 @@ namespace HandyReflection.Core.Expressions
       {
         throw new InvalidOperationException("Something went wrong");
       }
-      if (_state == State.FilterUpdated)
-        return node;
-
+      return _state == State.FilterUpdated ? node : base.VisitBinary(node);
     }
 
     protected override Expression VisitConstant(ConstantExpression node)
