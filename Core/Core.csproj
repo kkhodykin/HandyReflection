@@ -71,6 +71,7 @@
     <Compile Include="Helpers\PropertiesHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\TypeHelper.cs" />
+    <Compile Include="TypeReflector.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />

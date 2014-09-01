@@ -26,5 +26,15 @@ namespace HandyReflection.Core.Tests.SampleClasses
     }
     protected int ProtectedIntProperty { get; set; }
     private int PrivateIntProperty { get; set; }
+
+    public Parent()
+    {
+      
+    }
+
+    public Parent(string stringProp)
+    {
+      PublicStringProperty = stringProp;
+    }
   }
 }

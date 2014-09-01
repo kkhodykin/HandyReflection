@@ -60,6 +60,8 @@
     <Compile Include="SampleClasses\Child.cs" />
     <Compile Include="SampleClasses\GrandChild.cs" />
     <Compile Include="SampleClasses\Parent.cs" />
+    <Compile Include="TypeExtensionsTests.cs" />
+    <Compile Include="TypeReflector.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">

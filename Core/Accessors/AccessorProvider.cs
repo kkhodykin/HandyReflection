@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HandyReflection.Core.Accessors
 {
-  public interface IAccessorProvider
+  internal interface IAccessorProvider
   {
     TAccessor GetAccessor<TAccessor>();
   }
@@ -21,10 +21,10 @@ namespace HandyReflection.Core.Accessors
 
     public TAccessor GetAccessor<TAccessor>()
     {
-      if(!Accessors.ContainsKey(typeof(TAccessor)))
+      if (!Accessors.ContainsKey(typeof(TAccessor)))
         throw new ArgumentException("Not supported accessor type");
 
-      return (TAccessor)Accessors[typeof (TAccessor)]();
+      return (TAccessor)Accessors[typeof(TAccessor)]();
     }
   }
 }

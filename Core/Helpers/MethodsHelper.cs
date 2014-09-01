@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Leverate.Reflection
+namespace HandyReflection.Core.Helpers
 {
   public static class MethodsHelper
   {
@@ -39,7 +37,7 @@ namespace Leverate.Reflection
 
     private static MethodInfo FindMethodInternal(Type type, string name, BindingFlags bindingFlags, params Type[] parameterTypes)
     {
-      return MemberCache.Default.Get<MethodInfo>(new MemberDescriptor(type, name)
+      return MemberCache.Default.Get<MethodInfo>(new MemberCacheDescriptor(type, name)
       {
         BindingFlags = bindingFlags,
         MemberTypes = MemberTypes.Method
@@ -47,7 +45,7 @@ namespace Leverate.Reflection
         .SingleOrDefault(x => CheckArguments(parameterTypes, x));
     }
 
-    private static bool CheckArguments(Type[] argumentTypes, MethodInfo methodInfo)
+    internal static bool CheckArguments(Type[] argumentTypes, MethodBase methodInfo)
     {
       var parameterInfos = methodInfo.GetParameters();
       return parameterInfos.Length == argumentTypes.Length
@@ -72,6 +70,9 @@ namespace Leverate.Reflection
         thisType = thisType.GetElementType();
       if (type.IsByRef)
         type = type.GetElementType();
+
+      if (thisType.IsInterface && type.GetInterfaces().Contains(thisType))
+        return true;
 
       // Handle array types
       if (thisType.IsArray && type.IsArray)

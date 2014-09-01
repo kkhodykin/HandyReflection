@@ -19,7 +19,7 @@ namespace HandyReflection.Core.Filters
       None, Belonging, Visibility
     }
 
-    public BindingFlags BindingFlags { get; private set; }
+    public BindingFlags BindingFlags { get { return EvaluateFlags(); } }
     public String Name { get; private set; }
     //   public IEnumerable<Type> AtributeTypes { get; private set; }
     private ItemType _itemType = ItemType.None;
@@ -33,6 +33,37 @@ namespace HandyReflection.Core.Filters
         _itemType = ItemType.Belonging;
       if (itemType == typeof(MemberVisibility))
         _itemType = ItemType.Visibility;
+    }
+
+
+
+    BindingFlags EvaluateFlags()
+    {
+      var andFlag = BindingFlags.Default;
+      var orFlag = BindingFlags.Default;
+      while (_filterTypes.Count > 0)
+      {
+        var filterType = _filterTypes.Pop();
+        var flag = _flags.Pop();
+        if (filterType == FilterType.Or)
+        {
+          orFlag |= flag;
+        }
+        else if(filterType == FilterType.And)
+        {
+          andFlag = MergeFlags(flag, orFlag);
+          orFlag = BindingFlags.Default;
+        }
+      }
+      if (andFlag == BindingFlags.Default)
+        andFlag = orFlag;
+
+      return andFlag;
+    }
+
+    private BindingFlags MergeFlags(BindingFlags and, BindingFlags or)
+    {
+      throw new NotImplementedException();
     }
 
     public void BeginFilter(FilterType type)

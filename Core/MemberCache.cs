@@ -4,22 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Leverate.Reflection
+namespace HandyReflection.Core
 {
-  class MemberDescriptor
+  public class MemberCacheDescriptor
   {
     public Type Type { get; set; }
     public string Name { get; set; }
     public MemberTypes MemberTypes { get; set; }
     public BindingFlags BindingFlags { get; set; }
 
-    public MemberDescriptor()
+    public MemberCacheDescriptor()
     {
       MemberTypes = MemberTypes.All;
       BindingFlags = BindingFlags.Default;
     }
 
-    public MemberDescriptor(Type type, string name)
+    public MemberCacheDescriptor(Type type, string name)
       : this()
     {
       Type = type;
@@ -46,15 +46,15 @@ namespace Leverate.Reflection
       get { return DefaultInstance.Value; }
     }
 
-    public IEnumerable<MemberInfo> Get(MemberDescriptor descriptor)
+    public IEnumerable<MemberInfo> Get(MemberCacheDescriptor cacheDescriptor)
     {
-      return SplitCacheRequest(descriptor).SelectMany(x => Cache.GetOrAdd(x.Key, x.Value));
+      return SplitCacheRequest(cacheDescriptor).SelectMany(x => Cache.GetOrAdd(x.Key, x.Value));
     }
 
-    public IEnumerable<TMember> Get<TMember>(MemberDescriptor descriptor)
+    public IEnumerable<TMember> Get<TMember>(MemberCacheDescriptor cacheDescriptor)
       where TMember : MemberInfo
     {
-      return (Get(descriptor) ?? Enumerable.Empty<TMember>()).OfType<TMember>();
+      return (Get(cacheDescriptor) ?? Enumerable.Empty<TMember>()).OfType<TMember>();
     }
 
 
@@ -62,26 +62,32 @@ namespace Leverate.Reflection
       where TMember : MemberInfo
     {
       return
-        Get<TMember>(new MemberDescriptor(type, name)
+        Get<TMember>(new MemberCacheDescriptor(type, name)
         {
           MemberTypes =
             TypeMemberTypeMap.ContainsKey(typeof(TMember)) ? TypeMemberTypeMap[typeof(TMember)] : MemberTypes.All
         });
     }
 
-    private static IEnumerable<KeyValuePair<string, Func<string, IEnumerable<MemberInfo>>>> SplitCacheRequest(MemberDescriptor descriptor)
+    private static IEnumerable<KeyValuePair<string, Func<string, IEnumerable<MemberInfo>>>> SplitCacheRequest(MemberCacheDescriptor cacheDescriptor)
     {
-      var requestedTypes = SplitMemberTypes(descriptor.MemberTypes);
-      var requestedFlags = SplitFlags(descriptor.BindingFlags);
+      var requestedTypes = SplitMemberTypes(cacheDescriptor.MemberTypes);
+      var requestedFlags = SplitFlags(cacheDescriptor.BindingFlags);
 
       var result = requestedTypes.SelectMany(
         t => requestedFlags.Select(f => new
         {
-          Key = string.Format("{0}${1}${2}${3}", descriptor.Type.FullName, descriptor.Name, t, f),
-          Value = (Func<string, IEnumerable<MemberInfo>>)(v => descriptor.Type.GetMember(descriptor.Name, t, f))
+          Key = string.Format("{0}${1}${2}${3}", cacheDescriptor.Type.FullName, cacheDescriptor.Name, t, f),
+          Value = MakeMemberFactory(cacheDescriptor.Type, cacheDescriptor.Name, t, f)
         }));
 
       return result.ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    private static Func<string, IEnumerable<MemberInfo>> MakeMemberFactory(Type type, string memberName, MemberTypes memberTypes,
+      BindingFlags flags)
+    {
+      return v => type.GetMember(memberName, memberTypes, flags);
     }
 
     private static IEnumerable<MemberTypes> SplitMemberTypes(MemberTypes types)

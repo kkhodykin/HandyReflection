@@ -24,7 +24,7 @@ namespace HandyReflection.Core.Tests
 
       var visitor = new ReflectionVisitor<MemberBaseVisitor>();
       var expression = visitor.Visit(query.Expression);
-      Assert.AreEqual(visitor.Filter.BindingFlags, BindingFlags.Instance);
+      Assert.AreEqual(visitor.Filter.BindingFlags, BindingFlags.Instance, "SimpleFilterFailed");
 
       query =
         initialQuery.Where(
@@ -34,7 +34,7 @@ namespace HandyReflection.Core.Tests
 
       visitor = new ReflectionVisitor<MemberBaseVisitor>();
       expression = visitor.Visit(query.Expression);
-      Assert.AreEqual(visitor.Filter.BindingFlags, BindingFlags.Instance | BindingFlags.NonPublic);
+      Assert.AreEqual(visitor.Filter.BindingFlags, BindingFlags.Instance | BindingFlags.NonPublic, "Complex fileter failed");
     }
   }
 }

@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Leverate.Reflection;
 
-namespace Leverate.Reflection
+namespace HandyReflection.Core.Helpers
 {
   public static class TypeHelper
   {
@@ -37,7 +41,7 @@ namespace Leverate.Reflection
 
     private static bool IsTypeNullable(Type type)
     {
-      return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+      return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
     }
 
     /// <summary>
@@ -47,7 +51,8 @@ namespace Leverate.Reflection
     /// <param name="filter">Optional filter that is applied to the result</param>
     /// <param name="breakOnFirstEntry">Indicates whether to stop looking after first occurence</param>
     /// <returns></returns>
-    public static IEnumerable<Type> TraverseGenericArguments(this Type type, Func<Type, bool> filter = null, bool breakOnFirstEntry = false)
+    public static IEnumerable<Type> TraverseGenericArguments(this Type type, Func<Type, bool> filter = null,
+      bool breakOnFirstEntry = false)
     {
       var actualFilter = filter ?? (t => true);
       var currentArguments =
@@ -60,6 +65,57 @@ namespace Leverate.Reflection
         currentArguments.Union(type.BaseType != null
           ? TraverseGenericArguments(type.BaseType, filter, breakOnFirstEntry)
           : Enumerable.Empty<Type>());
+    }
+
+    private static readonly ConcurrentDictionary<string, Func<IEnumerable<object>, object>> ConstructorCalls =
+      new ConcurrentDictionary<string, Func<IEnumerable<object>, object>>();
+
+
+    public static Func<IEnumerable<object>, object> GetConstructorCall(Type type, params Type[] args)
+    {
+      var key = type.FullName + string.Join("$", args.Select(a => a.FullName));
+      return ConstructorCalls.GetOrAdd(key,
+        (Func<string, Func<IEnumerable<object>, object>>)(k => CreateConstructorCall(type, args)));
+    }
+
+    private static readonly MethodInfo ToArrayCall = MemberCache.Default.Get<MethodInfo>(new MemberCacheDescriptor(typeof(Enumerable), "ToArray")
+    {
+      BindingFlags = BindingFlags.Static | BindingFlags.Public,
+      MemberTypes = MemberTypes.Method
+    }).Single().MakeGenericMethod(typeof(object));
+
+    private static Func<IEnumerable<object>, object> CreateConstructorCall(Type type, params Type[] args)
+    {
+      var descriptor = new MemberCacheDescriptor()
+      {
+        Type = type,
+        BindingFlags = BindingFlags.Instance | BindingFlags.Public,
+        Name = ".ctor",
+        MemberTypes = MemberTypes.Constructor
+      };
+      var constructors = MemberCache.Default.Get<ConstructorInfo>(descriptor)
+        .Where(ctor => MethodsHelper.CheckArguments(args, ctor)).ToList();
+
+      if (!constructors.Any())
+        throw new InvalidOperationException("No matching constructor found");
+      if (constructors.Count() > 1)
+        throw new InvalidOperationException("Ambigous matching constructors found");
+
+      var constructor = constructors.Single();
+      
+      var argTypesExpression = Expression.Parameter(typeof (IEnumerable<object>));
+      var toArray = Expression.Call(ToArrayCall, argTypesExpression);
+
+      var paramExpressions = args.Select((x, i) =>
+        Expression.Convert(
+          Expression.ArrayAccess(toArray, Expression.Constant(i)), x));
+
+      var ctorCall = Expression.Lambda<Func<IEnumerable<object>, object>>(
+        //  (args)=>
+        //    new (object)MyType(args[0], args[1], args[2]....)
+        Expression.Convert(Expression.New(constructor, paramExpressions), typeof(object)),
+        argTypesExpression);
+      return ctorCall.Compile();
     }
 
   }
