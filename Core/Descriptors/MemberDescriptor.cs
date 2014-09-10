@@ -11,7 +11,7 @@ namespace HandyReflection.Core.Descriptors
     Public, NonPublic
   }
 
-  public enum MemberBelonging
+  public enum MemberAccessMode
   {
     Instance, Static
   }
@@ -19,7 +19,7 @@ namespace HandyReflection.Core.Descriptors
   public abstract class ReflectionDescriptorBase
   {
     public MemberVisibility Visibility { get; internal set; }
-    public MemberBelonging Belonging { get; internal set; }
+    public MemberAccessMode AccessMode { get; internal set; }
     public IAttributesDescriptor Attributes { get; internal set; }
   }
 

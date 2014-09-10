@@ -13,7 +13,7 @@ namespace HandyReflection.Core.Accessors
     TProperty Get<TProperty>();
   }
 
-  class PropertyAccessor : MemberAccessorBase<PropertyDescriptor>, IPropertyAccessor
+  class PropertyAccessor : MemberAccessor<PropertyDescriptor>, IPropertyAccessor
   {
     public void Set(object value)
     {

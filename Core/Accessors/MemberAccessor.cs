@@ -1,28 +1,57 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using HandyReflection.Core.Descriptors;
+using HandyReflection.Core.Filters;
+using HandyReflection.Core.Linq;
+using Remotion.Linq;
+using Remotion.Linq.Parsing.Structure;
 
 namespace HandyReflection.Core.Accessors
 {
-  public interface IAccessor
-  {
-    IAccessor SetInstance(object instance);
-  }
 
-  internal interface IMemberAccessor<TDescriptor> : IAccessor, IQueryable<TDescriptor> where TDescriptor : ReflectionDescriptorBase
+  class MemberAccessor<TDescriptor> : QueryableBase<TDescriptor> //:IQueryProvider, IMemberAccessor<TDescriptor>
   {
-    TAccessor SetInstance<TAccessor>(object instance)where TAccessor : IMemberAccessor<TDescriptor>;
-    bool HasInstance();
-  }
+    public object Instance { get; private set; }
 
-  internal interface IMemberAccessor : IMemberAccessor<MemberDescriptor>
-  {
+    public MemberAccessor()
+      : this(QueryParser.CreateDefault(), new MemberQueryExecutor())
+    {
 
-  }
+    }
 
-  class MemberAccessor : MemberAccessorBase<MemberDescriptor>, IMemberAccessor
-  {
+    protected MemberAccessor(IQueryParser queryParser, IQueryExecutor executor)
+      : base(queryParser, executor)
+    {
+    }
+
+    protected MemberAccessor(IQueryProvider provider)
+      : base(provider)
+    {
+    }
+
+    public MemberAccessor(IQueryProvider provider, Expression expression)
+      : base(provider, expression)
+    {
+    }
+
+    public TAccessor SetInstance<TAccessor>(object instance) where TAccessor : IMemberAccessor<TDescriptor>
+    {
+      Instance = instance;
+      return (TAccessor)(IMemberAccessor<TDescriptor>)this;
+    }
+
+    public IAccessor SetInstance(object instance)
+    {
+      throw new NotImplementedException();
+    }
+
+    public bool HasInstance()
+    {
+      return Instance != null;
+    }
   }
 }

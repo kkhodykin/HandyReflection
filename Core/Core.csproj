@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HandyReflection.Core</RootNamespace>
     <AssemblyName>HandyReflection.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,8 +30,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Remotion.Linq">
+      <HintPath>..\packages\Remotion.Linq.1.15.15.0\lib\portable-net45+wp80+wpa81+win\Remotion.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,8 +47,8 @@
   <ItemGroup>
     <Compile Include="Accessors\AccessorProvider.cs" />
     <Compile Include="Accessors\ConstructorAccessor.cs" />
+    <Compile Include="Accessors\IMemberAccessor.cs" />
     <Compile Include="Accessors\MemberAccessor.cs" />
-    <Compile Include="Accessors\MemberAccessorBase.cs" />
     <Compile Include="Accessors\MethodAccessor.cs" />
     <Compile Include="Accessors\PropertyAccessor.cs" />
     <Compile Include="DependencyInjection\DefaultDependencyResolver.cs" />
@@ -56,25 +62,31 @@
     <Compile Include="Exceptions\MethodNotFoundException.cs" />
     <Compile Include="Exceptions\PropertyNotFoundException.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
-    <Compile Include="Expressions\MemberBaseVisitor.cs" />
-    <Compile Include="Expressions\ReflectionVisitor.cs" />
+    <Compile Include="Linq\MemberBaseVisitor.cs" />
+    <Compile Include="Linq\ReflectionVisitor.cs" />
     <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PropertyExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Filters\FilterFactory.cs" />
     <Compile Include="Filters\MemberFilter.cs" />
+    <Compile Include="Filters\MemberFilterAggregator.cs" />
+    <Compile Include="Linq\MemberQueryExecutor.cs" />
     <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="MemberAccessBuilder.cs" />
     <Compile Include="MemberCache.cs" />
     <Compile Include="Helpers\MethodsHelper.cs" />
     <Compile Include="Helpers\PropertiesHelper.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\TypeHelper.cs" />
     <Compile Include="TypeReflector.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

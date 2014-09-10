@@ -25,7 +25,7 @@ namespace HandyReflection.Core.Accessors
 
   }
 
-  class MethodAccessor : MemberAccessorBase<MethodDescriptor>, IMethodAccessor
+  class MethodAccessor : MemberAccessor<MethodDescriptor>, IMethodAccessor
   {
     public object CallFunc(params object[] arguments)
     {

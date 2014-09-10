@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using HandyReflection.Core.Descriptors;
+using Remotion.Linq;
+using Remotion.Linq.Clauses;
 
 namespace HandyReflection.Core.Filters
 {
@@ -29,7 +30,7 @@ namespace HandyReflection.Core.Filters
 
     public void PushFilterItem(Type itemType)
     {
-      if (itemType == typeof(MemberBelonging))
+      if (itemType == typeof(MemberAccessMode))
         _itemType = ItemType.Belonging;
       if (itemType == typeof(MemberVisibility))
         _itemType = ItemType.Visibility;
@@ -82,7 +83,7 @@ namespace HandyReflection.Core.Filters
       switch (_itemType)
       {
         case ItemType.Belonging:
-          _flags.Push(UpdateBindingFlags((MemberBelonging)value));
+          _flags.Push(UpdateBindingFlags((MemberAccessMode)value));
           break;
         case ItemType.Visibility:
           _flags.Push(UpdateBindingFlags((MemberVisibility)value));
@@ -97,13 +98,13 @@ namespace HandyReflection.Core.Filters
       }
     }
 
-    BindingFlags UpdateBindingFlags(MemberBelonging belonging)
+    BindingFlags UpdateBindingFlags(MemberAccessMode accessMode)
     {
-      switch (belonging)
+      switch (accessMode)
       {
-        case MemberBelonging.Instance:
+        case MemberAccessMode.Instance:
           return BindingFlags.Instance;
-        case MemberBelonging.Static:
+        case MemberAccessMode.Static:
           return BindingFlags.Static;
       }
       throw new Exception();

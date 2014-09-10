@@ -55,12 +55,12 @@ namespace HandyReflection.Core
 
     public IQueryable<MemberDescriptor> Member(string memberName)
     {
-      return _accessorProvider.GetAccessor<IMemberAccessor>().Where(x => x.Name == memberName);
+      return _accessorProvider.GetAccessor<IMemberAccessor<MemberDescriptor>>().Where(x => x.Name == memberName);
     }
 
     public IQueryable<MemberDescriptor> Members()
     {
-      return _accessorProvider.GetAccessor<IMemberAccessor>();
+      return _accessorProvider.GetAccessor<IMemberAccessor<MemberDescriptor>>();
     }
   }
 }

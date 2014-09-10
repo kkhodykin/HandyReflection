@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HandyReflection.Core.Descriptors;
 
 namespace HandyReflection.Core.Accessors
 {
@@ -16,7 +17,7 @@ namespace HandyReflection.Core.Accessors
     {
       {typeof(IPropertyAccessor), ()=>new PropertyAccessor()},
       {typeof(IMethodAccessor), ()=>new MethodAccessor()},
-      {typeof(IMemberAccessor), ()=>new MemberAccessor()},
+      {typeof(IMemberAccessor<MemberDescriptor>), ()=>new MemberAccessor<MemberDescriptor>()},
     };
 
     public TAccessor GetAccessor<TAccessor>()
