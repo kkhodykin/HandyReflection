@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using HandyReflection.Core.Descriptors;
+using HandyReflection.Core.Helpers;
 
 namespace HandyReflection.Core.Filters
 {
@@ -65,6 +66,7 @@ namespace HandyReflection.Core.Filters
       }
     }
 
+    public string Name { get; set; }
     public BindingFlags BindingFlags { get; set; }
     public MemberTypes MemberTypes { get; set; }
     public Type Type { get; set; }
@@ -75,19 +77,27 @@ namespace HandyReflection.Core.Filters
 
     private void UpdateState()
     {
-      
+
     }
   }
 
   class MemberFilterAggregator
   {
-    private readonly CompositeFilter _filterRoot = new CompositeFilter { FilterGroupping = FilterGroupping.Empty};
-    private static readonly Dictionary<Type, FilterBy> PropertyTypes = new Dictionary<Type, FilterBy>(new Dictionary<Type, FilterBy>
+    private readonly CompositeFilter _filterRoot = new CompositeFilter { FilterGroupping = FilterGroupping.Empty };
+
+    private static readonly Dictionary<Type, FilterBy> PropertyTypes = new Dictionary<Type, FilterBy>
     {
-      {typeof(MemberAccessMode), FilterBy.BindingFlags},
-      {typeof(MemberVisibility), FilterBy.BindingFlags},
-      {typeof(Type), FilterBy.Type},
-    });
+      {typeof (MemberAccessMode), FilterBy.BindingFlags},
+      {typeof (MemberVisibility), FilterBy.BindingFlags},
+      {typeof (Type), FilterBy.Type},
+    };
+
+    private static readonly BindingFlags[] BindingFlagsMappinsg =
+    {
+      BindingFlags.Public, BindingFlags.NonPublic,
+      BindingFlags.Instance, BindingFlags.Static
+    };
+
 
     public virtual CompositeFilter Push(Expression item, CompositeFilter root = null)
     {
@@ -102,20 +112,27 @@ namespace HandyReflection.Core.Filters
           break;
         case ExpressionType.NotEqual:
         case ExpressionType.Equal:
-          return ProcessCondition((FilterFunction) (int) item.NodeType,  root);
+          return ProcessCondition((FilterFunction)(int)item.NodeType, root);
           break;
         case ExpressionType.MemberAccess:
-          //_itemScopes.GetScope().FilterBy = ResolvePropertyType((item as MemberExpression).Member);
+          ProcessMember(item as MemberExpression, root as Filter);
           break;
         case ExpressionType.Constant:
-          return ProcessValue(item as ConstantExpression, root as Filter);
+          ProcessValue(item as ConstantExpression, root as Filter);
           break;
       }
+      return root;
     }
 
-    private CompositeFilter ProcessValue(ConstantExpression item, Filter root)
+    private void ProcessMember(MemberExpression expression, Filter root)
     {
-      if(root == null)
+      var filterBy = ResolvePropertyType(expression.Member);
+      root.FilterBy = filterBy;
+    }
+
+    private void ProcessValue(ConstantExpression item, Filter root)
+    {
+      if (root == null)
         throw new ArgumentException("the filter should be of specific type");
 
       switch (root.FilterBy)
@@ -124,23 +141,27 @@ namespace HandyReflection.Core.Filters
           root.Cancelled = true;
           break;
         case FilterBy.BindingFlags:
-
+          var intValue = (int) item.Value;
+          root.BindingFlags = BindingFlagsMappinsg[intValue - 1];
           break;
         case FilterBy.Name:
+          root.Name = item.Value.ToString();
           break;
         case FilterBy.Type:
+          root.Type = item.Value as Type;
           break;
         case FilterBy.MemberType:
+          root.MemberTypes = (MemberTypes) item.Value;
           break;
         default:
-          throw new ArgumentOutOfRangeException();
+          root.Cancelled = true;
+          break;
       }
-      root.FilterFunction
     }
 
     private CompositeFilter ProcessCondition(FilterFunction filterFunction, CompositeFilter root)
     {
-      root.ChildScopes.Add(new Filter{FilterGroupping = FilterGroupping.Or, FilterFunction = filterFunction});
+      root.ChildScopes.Add(new Filter { FilterGroupping = FilterGroupping.Or, FilterFunction = filterFunction });
       return root.ChildScopes.Last();
     }
 
@@ -153,7 +174,7 @@ namespace HandyReflection.Core.Filters
         return currentFilter;
       }
 
-      var filter = new CompositeFilter {FilterGroupping = FilterGroupping.And};
+      var filter = new CompositeFilter { FilterGroupping = FilterGroupping.And };
       currentFilter.ChildScopes.Add(filter);
       return filter;
     }
@@ -163,12 +184,13 @@ namespace HandyReflection.Core.Filters
     private FilterBy ResolvePropertyType(MemberInfo info)
     {
       var property = info as PropertyInfo;
-      if(property == null || !PropertyTypes.ContainsKey(property.PropertyType))
+      if (property == null)
         return FilterBy.Empty;
-      return PropertyTypes[property.PropertyType];
+      if (property.PropertyType == typeof(string) && property.Name == "Name")
+        return FilterBy.Name;
+      if (PropertyTypes.ContainsKey(property.PropertyType))
+        return PropertyTypes[property.PropertyType];
+      return FilterBy.Empty;
     }
-
-
-
   }
 }

@@ -25,7 +25,7 @@ namespace HandyReflection.Core.Linq
 
     public static Expression Visit(Expression expression, MemberFilterAggregator aggregator, CompositeFilter filter = null)
     {
-      new WhereClauseVisitor(aggregator, filter).VisitExpression(expression);
+      return new WhereClauseVisitor(aggregator, filter).VisitExpression(expression);
     }
 
     public WhereClauseVisitor(MemberFilterAggregator aggregator, CompositeFilter filter)
