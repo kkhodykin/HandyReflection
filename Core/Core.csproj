@@ -62,6 +62,7 @@
     <Compile Include="Exceptions\MethodNotFoundException.cs" />
     <Compile Include="Exceptions\PropertyNotFoundException.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
+    <Compile Include="Helpers\MethodFinder.cs" />
     <Compile Include="Linq\MemberBaseVisitor.cs" />
     <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />

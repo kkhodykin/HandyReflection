@@ -6,90 +6,56 @@ using HandyReflection.Core.Descriptors;
 
 namespace HandyReflection.Core.Accessors
 {
-  internal interface IMethodAccessor : IMemberAccessor<MethodDescriptor>
+	public interface IFunctionAccessor : IMethodAccessor
+	{
+		object GetResult();
+		TResult GetResult<TResult>();
+	}
+
+	public interface IMethodAccessor : IMemberAccessor<MethodDescriptor>
+	{
+		IFunctionAccessor Returns(Type returnType);
+		IFunctionAccessor Returns<TResult>();
+		IMethodAccessor WithParam<TParameter>(TParameter value);
+		void Call();
+		//IMethodAccessor Generic(params Type[] genericParamTypes);
+		//IMethodAccessor Generic<TParam>();
+		//IMethodAccessor Generic<TParam1, TParam2>();
+		//IMethodAccessor Generic<TParam1, TParam2, TParam3>();
+	}
+
+  class MethodAccessor : MemberAccessor<MethodDescriptor>, IFunctionAccessor
   {
-    object CallFunc(params object[] arguments);
-    TResult CallFunc<TResult>();
-    TResult CallFunc<T1,TResult>(T1 arg1);
-    TResult CallFunc<T1, T2, TResult>(T1 arg1, T2 arg2);
-    TResult CallFunc<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3);
-    TResult CallFunc<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
-    TResult CallFunc<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+	  public IFunctionAccessor Returns(Type returnType)
+	  {
+		  Descriptor.ReturnType = returnType;
+		  return this;
+	  }
 
-    void CallAction(params object[] arguments);
-    void CallAction<T1>(T1 arg1);
-    void CallAction<T1, T2>(T1 arg1, T2 arg2);
-    void CallAction<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3);
-    void CallAction<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
-    void CallAction<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+	  public IFunctionAccessor Returns<TResult>()
+	  {
+		  return Returns(typeof (TResult));
+	  }
 
-  }
+	  public IMethodAccessor WithParam<TParameter>(TParameter value)
+	  {
+		  Descriptor.AddParam(value);
+		  return this;
+	  }
 
-  class MethodAccessor : MemberAccessor<MethodDescriptor>, IMethodAccessor
-  {
-    public object CallFunc(params object[] arguments)
-    {
-      throw new NotImplementedException();
-    }
+	  public void Call()
+	  {
+		  throw new NotImplementedException();
+	  }
 
-    public TResult CallFunc<TResult>()
-    {
-      throw new NotImplementedException();
-    }
+	  public object GetResult()
+	  {
+		  throw new NotImplementedException();
+	  }
 
-    public TResult CallFunc<T1, TResult>(T1 arg1)
-    {
-      throw new NotImplementedException();
-    }
-
-    public TResult CallFunc<T1, T2, TResult>(T1 arg1, T2 arg2)
-    {
-      throw new NotImplementedException();
-    }
-
-    public TResult CallFunc<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3)
-    {
-      throw new NotImplementedException();
-    }
-
-    public TResult CallFunc<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-    {
-      throw new NotImplementedException();
-    }
-
-    public TResult CallFunc<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void CallAction(params object[] arguments)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void CallAction<T1>(T1 arg1)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void CallAction<T1, T2>(T1 arg1, T2 arg2)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void CallAction<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void CallAction<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void CallAction<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-    {
-      throw new NotImplementedException();
-    }
+	  public TResult GetResult<TResult>()
+	  {
+		  throw new NotImplementedException();
+	  }
   }
 }

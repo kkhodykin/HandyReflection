@@ -1,19 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using HandyReflection.Core.Annotations;
-using HandyReflection.Core.Descriptors;
+﻿using System.Linq.Expressions;
 using HandyReflection.Core.Filters;
 using Remotion.Linq;
 using Remotion.Linq.Clauses;
-using Remotion.Linq.Clauses.Expressions;
-using Remotion.Linq.Clauses.ExpressionTreeVisitors;
 using Remotion.Linq.Parsing;
-using Remotion.Linq.Parsing.ExpressionTreeVisitors;
-using Remotion.Linq.Parsing.Structure;
-using MemberFilter = HandyReflection.Core.Filters.MemberFilter;
 
 namespace HandyReflection.Core.Linq
 {

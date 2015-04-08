@@ -13,30 +13,15 @@ using Remotion.Linq.Parsing.Structure;
 namespace HandyReflection.Core.Accessors
 {
 
-  class MemberAccessor<TDescriptor> : QueryableBase<TDescriptor> //:IQueryProvider, IMemberAccessor<TDescriptor>
+	class MemberAccessor<TDescriptor> where TDescriptor : MemberDescriptorBase, new() // : QueryableBase<TDescriptor> //:IQueryProvider, IMemberAccessor<TDescriptor>
   {
     public object Instance { get; private set; }
+		protected TDescriptor Descriptor { get; private set; }
 
-    public MemberAccessor()
-      : this(QueryParser.CreateDefault(), new MemberQueryExecutor())
-    {
-
-    }
-
-    protected MemberAccessor(IQueryParser queryParser, IQueryExecutor executor)
-      : base(queryParser, executor)
-    {
-    }
-
-    protected MemberAccessor(IQueryProvider provider)
-      : base(provider)
-    {
-    }
-
-    public MemberAccessor(IQueryProvider provider, Expression expression)
-      : base(provider, expression)
-    {
-    }
+		public MemberAccessor()
+		{
+			Descriptor = new TDescriptor();
+		}
 
     public TAccessor SetInstance<TAccessor>(object instance) where TAccessor : IMemberAccessor<TDescriptor>
     {
