@@ -19,7 +19,5 @@ namespace HandyReflection.Core.Helpers
 		{
 			throw new NotImplementedException();
 		}
-		
-		
 	}
 }

@@ -8,7 +8,6 @@ using HandyReflection.Core;
 
 namespace Leverate.Reflection
 {
-
   /// <summary>
   /// Extensions to works with reflected properties.
   /// </summary>
