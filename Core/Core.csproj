@@ -33,9 +33,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Remotion.Linq">
-      <HintPath>..\packages\Remotion.Linq.1.15.15.0\lib\portable-net45+wp80+wpa81+win\Remotion.Linq.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -62,15 +59,13 @@
     <Compile Include="Exceptions\MethodNotFoundException.cs" />
     <Compile Include="Exceptions\PropertyNotFoundException.cs" />
     <Compile Include="Exceptions\TypeMismatchException.cs" />
+    <Compile Include="Linq\MemberAccessorQueryProvider.cs" />
     <Compile Include="Linq\MemberBaseVisitor.cs" />
     <Compile Include="Extensions\MethodExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PropertyExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="Filters\FilterFactory.cs" />
-    <Compile Include="Filters\MemberFilter.cs" />
     <Compile Include="Filters\MemberFilterAggregator.cs" />
-    <Compile Include="Linq\MemberQueryExecutor.cs" />
     <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="MemberAccessBuilder.cs" />
     <Compile Include="MemberCache.cs" />

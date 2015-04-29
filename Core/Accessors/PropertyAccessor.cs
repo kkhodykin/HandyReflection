@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using HandyReflection.Core.Descriptors;
+using HandyReflection.Core.Linq;
+using Leverate.Reflection;
 
 namespace HandyReflection.Core.Accessors
 {
@@ -22,6 +23,13 @@ namespace HandyReflection.Core.Accessors
 
     public object Get()
     {
+      //var model = QueryParser.CreateDefault().GetParsedQuery(Expression);
+      //var cacheDescriptor = MemberBaseVisitor.Visit(model);
+      //cacheDescriptor.MemberTypes = MemberTypes.Property;
+      //var property = MemberCache.Default.Get<PropertyInfo>(cacheDescriptor).FirstOrDefault();
+      //if(property == null)
+      //  throw new InvalidOperationException("Property not found");
+      //return property.GetGetter<object, object>()(Instance);
       throw new NotImplementedException();
     }
 

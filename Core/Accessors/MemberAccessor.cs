@@ -3,39 +3,40 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using HandyReflection.Core.Descriptors;
-using HandyReflection.Core.Filters;
 using HandyReflection.Core.Linq;
-using Remotion.Linq;
-using Remotion.Linq.Parsing.Structure;
 
 namespace HandyReflection.Core.Accessors
 {
 
-  class MemberAccessor<TDescriptor> : QueryableBase<TDescriptor> //:IQueryProvider, IMemberAccessor<TDescriptor>
+  class MemberAccessor<TDescriptor> : IMemberAccessor<TDescriptor>
   {
     public object Instance { get; private set; }
 
     public MemberAccessor()
-      : this(QueryParser.CreateDefault(), new MemberQueryExecutor())
     {
-
+      Provider = new MemberAccessorQueryProvider();
+      Expression = Expression.Constant(this);
     }
 
-    protected MemberAccessor(IQueryParser queryParser, IQueryExecutor executor)
-      : base(queryParser, executor)
+    public MemberAccessor(MemberAccessorQueryProvider provider, Expression expression)
     {
-    }
+      if (provider == null)
+      {
+        throw new ArgumentNullException("provider");
+      }
 
-    protected MemberAccessor(IQueryProvider provider)
-      : base(provider)
-    {
-    }
+      if (expression == null)
+      {
+        throw new ArgumentNullException("expression");
+      }
 
-    public MemberAccessor(IQueryProvider provider, Expression expression)
-      : base(provider, expression)
-    {
+      if (!typeof(IQueryable<TDescriptor>).IsAssignableFrom(expression.Type))
+      {
+        throw new ArgumentOutOfRangeException("expression");
+      }
+
+      Provider = provider;
+      Expression = expression;
     }
 
     public TAccessor SetInstance<TAccessor>(object instance) where TAccessor : IMemberAccessor<TDescriptor>
@@ -46,12 +47,32 @@ namespace HandyReflection.Core.Accessors
 
     public IAccessor SetInstance(object instance)
     {
-      throw new NotImplementedException();
+      Instance = instance;
+      return this;
     }
 
     public bool HasInstance()
     {
       return Instance != null;
     }
+
+    public IEnumerator<TDescriptor> GetEnumerator()
+    {
+      return (Provider.Execute<IEnumerable<TDescriptor>>(Expression)).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+      return (Provider.Execute<System.Collections.IEnumerable>(Expression)).GetEnumerator();
+    }
+
+    public Expression Expression { get; private set; }
+    public IQueryProvider Provider { get; private set; }
+
+    public Type ElementType
+    {
+      get { return typeof (TDescriptor); }
+    }
+
   }
 }

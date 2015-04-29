@@ -1,40 +1,26 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using HandyReflection.Core.Annotations;
-using HandyReflection.Core.Descriptors;
+﻿using System.Linq.Expressions;
 using HandyReflection.Core.Filters;
-using Remotion.Linq;
-using Remotion.Linq.Clauses;
-using Remotion.Linq.Clauses.Expressions;
-using Remotion.Linq.Clauses.ExpressionTreeVisitors;
-using Remotion.Linq.Parsing;
-using Remotion.Linq.Parsing.ExpressionTreeVisitors;
-using Remotion.Linq.Parsing.Structure;
-using MemberFilter = HandyReflection.Core.Filters.MemberFilter;
 
 namespace HandyReflection.Core.Linq
 {
 
-  class WhereClauseVisitor : ExpressionTreeVisitor
+  class WhereClauseVisitor : ExpressionVisitor
   {
     private readonly MemberFilterAggregator _aggregator;
-    private readonly CompositeFilter _filter;
+    private readonly FilterGroup _filter;
 
-    public static Expression Visit(Expression expression, MemberFilterAggregator aggregator, CompositeFilter filter = null)
+    public static Expression Visit(Expression expression, MemberFilterAggregator aggregator, FilterGroup filter = null)
     {
-      return new WhereClauseVisitor(aggregator, filter).VisitExpression(expression);
+      return new WhereClauseVisitor(aggregator, filter).Visit(expression);
     }
 
-    public WhereClauseVisitor(MemberFilterAggregator aggregator, CompositeFilter filter)
+    public WhereClauseVisitor(MemberFilterAggregator aggregator, FilterGroup filter)
     {
       _aggregator = aggregator;
       _filter = filter;
     }
 
-    protected override Expression VisitBinaryExpression(BinaryExpression expression)
+    protected override Expression VisitBinary(BinaryExpression expression)
     {
       var filter = _aggregator.Push(expression, _filter);
       var left = Visit(expression.Left, _aggregator, filter);
@@ -44,33 +30,56 @@ namespace HandyReflection.Core.Linq
       return expression;
     }
 
-    protected override Expression VisitMemberExpression(MemberExpression expression)
+    protected override Expression VisitMember(MemberExpression expression)
     {
       _aggregator.Push(expression, _filter);
-      return base.VisitMemberExpression(expression);
+      return base.VisitMember(expression);
     }
 
-    protected override Expression VisitConstantExpression(ConstantExpression expression)
+    protected override Expression VisitConstant(ConstantExpression expression)
     {
       _aggregator.Push(expression, _filter);
-      return base.VisitConstantExpression(expression);
+      return base.VisitConstant(expression);
     }
   }
 
-  class MemberBaseVisitor : QueryModelVisitorBase
+  class MemberBaseVisitor : ExpressionVisitor
   {
     readonly MemberFilterAggregator _filterAggregator = new MemberFilterAggregator();
 
-    public static void Visit(QueryModel queryModel)
+
+    public static MemberCacheDescriptor GetCacheDescriptor(Expression expression)
     {
-      new MemberBaseVisitor().VisitQueryModel(queryModel);
+      var visitor = new MemberBaseVisitor();
+      visitor.Visit(expression);
+      return visitor._filterAggregator.ToMemberCacheDescriptor();
+
     }
 
-    public override void VisitWhereClause(WhereClause whereClause, QueryModel queryModel, int index)
+    protected override Expression VisitMethodCall(MethodCallExpression node)
     {
-      WhereClauseVisitor.Visit(whereClause.Predicate, _filterAggregator);
-      base.VisitWhereClause(whereClause, queryModel, index);
+      if (node.Method.Name == "Where")
+      {
+        WhereClauseVisitor.Visit(node.Arguments[1], _filterAggregator);
+      }
+      return base.VisitMethodCall(node);
     }
   }
 
-}
+  //class MemberBaseVisitor1 : QueryModelVisitorBase
+  //{
+  //  readonly MemberFilterAggregator _filterAggregator = new MemberFilterAggregator();
+    
+  //  public static MemberCacheDescriptor Visit(QueryModel queryModel)
+  //  {
+  //    var visitor = new MemberBaseVisitor();
+  //    visitor.VisitQueryModel(queryModel);
+  //    return visitor._filterAggregator.ToMemberCacheDescriptor();
+  //  }
+
+  //  public override void VisitWhereClause(WhereClause whereClause, QueryModel queryModel, int index)
+  //  {
+  //    WhereClauseVisitor.Visit(whereClause.Predicate, _filterAggregator);
+  //    base.VisitWhereClause(whereClause, queryModel, index);
+  //  }
+  }

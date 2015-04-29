@@ -1,95 +1,74 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using HandyReflection.Core.Descriptors;
-using HandyReflection.Core.Helpers;
 
 namespace HandyReflection.Core.Filters
 {
-  class FilterScopeStack : ConcurrentStack<Filter>
+  enum FilterGroupKind
   {
-    public Filter GetScope()
-    {
-      Filter result;
-      if (TryPeek(out result) && !result.Cancelled)
-        return result;
-      result = new Filter();
-      Push(result);
-      return result;
-    }
+    Root = 0, And = 1, Or = 2
   }
 
-  enum FilterGroupping
+  enum FilterExpression
   {
-    Empty = 0, And = 1, Or = 2
-  }
-
-  enum FilterFunction
-  {
-    Empty = 0, Eq = 13, Ne = 35
+    Unknown = 0, Eq = 13, Ne = 35
   }
 
   enum FilterBy
   {
-    Empty = 0, BindingFlags = 1, Name = 3, Type = 4, MemberType = 5
+    NotSet = 0, BindingFlags = 1, Name = 3, Type = 4, MemberType = 5, Unknown = 99
   }
 
-  internal class CompositeFilter
+  enum FilterType
   {
-    public IList<CompositeFilter> ChildScopes { get; private set; }
-    public bool Cancelled { get; set; }
-    public FilterGroupping FilterGroupping { get; set; }
-    public CompositeFilter()
-    {
-      ChildScopes = new List<CompositeFilter>();
-    }
+    Group, Filter
   }
 
-  class Filter : CompositeFilter
+  internal interface IFilter
   {
-    private FilterBy _filterBy;
+    FilterType FilterType { get; }
+  }
 
-    public FilterBy FilterBy
+  internal class FilterGroup : IFilter
+  {
+    public Stack<IFilter> Filters { get; private set; }
+    public FilterGroupKind GroupKind { get; set; }
+
+    public FilterGroup()
     {
-      get { return _filterBy; }
-      set
-      {
-        _filterBy = value;
-        UpdateState();
-      }
+      Filters = new Stack<IFilter>();
     }
+
+    public FilterType FilterType { get { return FilterType.Group; } }
+  }
+
+  class Filter : IFilter
+  {
+    public FilterBy FilterBy { get; set; }
+    public FilterExpression FilterExpression { get; set; }
 
     public string Name { get; set; }
     public BindingFlags BindingFlags { get; set; }
     public MemberTypes MemberTypes { get; set; }
     public Type Type { get; set; }
 
-    public FilterFunction FilterFunction { get; set; }
-
-
-
-    private void UpdateState()
-    {
-
-    }
+    public FilterType FilterType { get { return FilterType.Filter; } }
   }
+
+
 
   class MemberFilterAggregator
   {
-    private readonly CompositeFilter _filterRoot = new CompositeFilter { FilterGroupping = FilterGroupping.Empty };
+    private readonly FilterGroup _filterRoot = new FilterGroup { GroupKind = FilterGroupKind.Root };
 
     private static readonly Dictionary<Type, FilterBy> PropertyTypes = new Dictionary<Type, FilterBy>
     {
       {typeof (MemberAccessMode), FilterBy.BindingFlags},
       {typeof (MemberVisibility), FilterBy.BindingFlags},
-      {typeof (Type), FilterBy.Type},
+      {typeof(MemberTypes), FilterBy.MemberType}
     };
 
     private static readonly BindingFlags[] BindingFlagsMappinsg =
@@ -98,99 +77,230 @@ namespace HandyReflection.Core.Filters
       BindingFlags.Instance, BindingFlags.Static
     };
 
-
-    public virtual CompositeFilter Push(Expression item, CompositeFilter root = null)
+    public virtual FilterGroup Push(Expression item, FilterGroup root = null)
     {
+      root = root ?? _filterRoot;
       switch (item.NodeType)
       {
-        case ExpressionType.And:
-        case ExpressionType.AndAlso:
-          return ProcessLogicalAnd(root);
-          break;
         case ExpressionType.Or:
         case ExpressionType.OrElse:
-          break;
+          return ProcessOr(root);
         case ExpressionType.NotEqual:
         case ExpressionType.Equal:
-          return ProcessCondition((FilterFunction)(int)item.NodeType, root);
+          ProcessCondition((FilterExpression)(int)item.NodeType, root);
           break;
         case ExpressionType.MemberAccess:
-          ProcessMember(item as MemberExpression, root as Filter);
+          ProcessMember(item as MemberExpression, root);
           break;
         case ExpressionType.Constant:
-          ProcessValue(item as ConstantExpression, root as Filter);
+          ProcessValue(item as ConstantExpression, root);
           break;
       }
       return root;
     }
 
-    private void ProcessMember(MemberExpression expression, Filter root)
+    public MemberCacheDescriptor ToMemberCacheDescriptor()
     {
-      var filterBy = ResolvePropertyType(expression.Member);
-      root.FilterBy = filterBy;
+      if (!_filterRoot.Filters.Any()) return null;
+
+      return ParseFilterTree(_filterRoot);
     }
 
-    private void ProcessValue(ConstantExpression item, Filter root)
+    private MemberCacheDescriptor ParseFilterTree(FilterGroup root)
+    {
+      return ToDescriptor(root);
+    }
+
+    private MemberCacheDescriptor ToDescriptor(FilterGroup group)
+    {
+      var descriptors = new List<MemberCacheDescriptor>();
+
+      while (group.Filters.Any())
+      {
+        var filter = group.Filters.Pop();
+        switch (filter.FilterType)
+        {
+          case FilterType.Group:
+            descriptors.Add(ToDescriptor((FilterGroup)filter));
+            break;
+          case FilterType.Filter:
+            descriptors.Add(ToDescriptor((Filter)filter));
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
+
+      switch (group.GroupKind)
+      {
+        case FilterGroupKind.And:
+        case FilterGroupKind.Root:
+          return MergeDescriptorsUsingAnd(descriptors);
+        case FilterGroupKind.Or:
+          return MergeDescriptorsUsingOr(descriptors);
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+    }
+
+    private MemberCacheDescriptor ToDescriptor(Filter filter)
+    {
+      var result = new MemberCacheDescriptor();
+      switch (filter.FilterBy)
+      {
+        case FilterBy.BindingFlags:
+          result.BindingFlags = filter.BindingFlags;
+          break;
+        case FilterBy.Name:
+          result.Name = filter.Name;
+          break;
+        case FilterBy.Type:
+          result.Type = filter.Type;
+          break;
+        case FilterBy.MemberType:
+          result.MemberTypes = filter.MemberTypes;
+          break;
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+
+      return result;
+    }
+
+    private MemberCacheDescriptor MergeDescriptorsUsingAnd(IEnumerable<MemberCacheDescriptor> descriptors)
+    {
+      var result = new MemberCacheDescriptor();
+      foreach (var descriptor in descriptors)
+      {
+        result.BindingFlags = MergeFlags(result.BindingFlags, descriptor.BindingFlags);
+        if (descriptor.MemberTypes != MemberTypes.All && result.MemberTypes == MemberTypes.All)
+          result.MemberTypes = descriptor.MemberTypes;
+        else if (descriptor.MemberTypes != MemberTypes.All)
+          result.MemberTypes = ~MemberTypes.All;
+        if (!string.IsNullOrEmpty(descriptor.Name) && string.IsNullOrEmpty(result.Name))
+          result.Name = descriptor.Name;
+        else if (!string.IsNullOrEmpty(descriptor.Name))
+          throw new ArgumentException("Mutually exclusive conditions for Name");
+        if (descriptor.Type !=null && result.Type == null)
+          result.Type = descriptor.Type;
+        else if (descriptor.Type != null)
+          throw new ArgumentException("Mutually exclusive conditions for Type");
+      }
+      return result;
+    }
+
+    private MemberCacheDescriptor MergeDescriptorsUsingOr(IEnumerable<MemberCacheDescriptor> descriptors)
+    {
+      var result = new MemberCacheDescriptor();
+      foreach (var descriptor in descriptors)
+      {
+        result.BindingFlags |= descriptor.BindingFlags;
+        result.MemberTypes |= descriptor.MemberTypes;
+        if (result.Type == null && descriptor.Type != null)
+          result.Type = descriptor.Type;
+        else if(descriptor.Type!=null)
+          throw new ArgumentException("Can't filter by multiple types");
+        if (!string.IsNullOrEmpty(descriptor.Name) && string.IsNullOrEmpty(result.Name))
+          result.Name = descriptor.Name;
+        else if (!string.IsNullOrEmpty(descriptor.Name))
+          throw new ArgumentException("Can't filter by multiple names");
+      }
+
+      return result;
+    }
+
+    private BindingFlags MergeFlags(BindingFlags a, BindingFlags b)
+    {
+      switch (b)
+      {
+        case BindingFlags.Public:
+          if ((a & BindingFlags.NonPublic) == BindingFlags.NonPublic)
+            return a & ~BindingFlags.NonPublic;
+          break;
+        case BindingFlags.NonPublic:
+          if ((a & BindingFlags.Public) == BindingFlags.Public)
+            return a & ~BindingFlags.Public;
+          break;
+        case BindingFlags.Instance:
+          if ((a & BindingFlags.Static) == BindingFlags.Static)
+            return a & ~BindingFlags.Static;
+          break;
+        case BindingFlags.Static:
+          if ((a & BindingFlags.Instance) == BindingFlags.Instance)
+            return a & ~BindingFlags.Instance;
+          break;
+      }
+      return a | b;
+    }
+
+    private FilterGroup ProcessOr(FilterGroup root)
+    {
+      var group = new FilterGroup {GroupKind = FilterGroupKind.Or};
+      root.Filters.Push(group);
+      return group;
+    }
+
+    private void ProcessMember(MemberExpression expression, FilterGroup root)
+    {
+      var filterBy = ResolvePropertyType(expression.Member);
+      if (filterBy == FilterBy.Unknown && root.Filters.Peek() is Filter)
+        root.Filters.Pop();
+
+      var filter = (Filter)root.Filters.Peek();
+      filter.FilterBy = filterBy;
+    }
+
+    private void ProcessValue(ConstantExpression item, FilterGroup root)
     {
       if (root == null)
         throw new ArgumentException("the filter should be of specific type");
+      var filter = root.Filters.Peek() as Filter;
+      if (filter == null)
+        return;
 
-      switch (root.FilterBy)
+      switch (filter.FilterBy)
       {
-        case FilterBy.Empty:
-          root.Cancelled = true;
+        case FilterBy.NotSet:
+          root.Filters.Pop();
           break;
         case FilterBy.BindingFlags:
-          var intValue = (int) item.Value;
-          root.BindingFlags = BindingFlagsMappinsg[intValue - 1];
+          var intValue = (int)item.Value;
+          filter.BindingFlags = BindingFlagsMappinsg[intValue - 1];
           break;
         case FilterBy.Name:
-          root.Name = item.Value.ToString();
+          filter.Name = item.Value.ToString();
           break;
         case FilterBy.Type:
-          root.Type = item.Value as Type;
+          filter.Type = item.Value as Type;
           break;
         case FilterBy.MemberType:
-          root.MemberTypes = (MemberTypes) item.Value;
+          filter.MemberTypes = (MemberTypes)item.Value;
           break;
         default:
-          root.Cancelled = true;
+          root.Filters.Pop();
           break;
       }
     }
 
-    private CompositeFilter ProcessCondition(FilterFunction filterFunction, CompositeFilter root)
+    private void ProcessCondition(FilterExpression filterExpression, FilterGroup root)
     {
-      root.ChildScopes.Add(new Filter { FilterGroupping = FilterGroupping.Or, FilterFunction = filterFunction });
-      return root.ChildScopes.Last();
+      var filter = new Filter();
+      root.Filters.Push(filter);
+      filter.FilterExpression = filterExpression;
     }
-
-    private CompositeFilter ProcessLogicalAnd(CompositeFilter compositeFilter)
-    {
-      var currentFilter = compositeFilter ?? _filterRoot;
-      if (currentFilter.FilterGroupping == FilterGroupping.Empty || currentFilter.FilterGroupping == FilterGroupping.And)
-      {
-        currentFilter.FilterGroupping = FilterGroupping.And;
-        return currentFilter;
-      }
-
-      var filter = new CompositeFilter { FilterGroupping = FilterGroupping.And };
-      currentFilter.ChildScopes.Add(filter);
-      return filter;
-    }
-
-
 
     private FilterBy ResolvePropertyType(MemberInfo info)
     {
       var property = info as PropertyInfo;
       if (property == null)
-        return FilterBy.Empty;
-      if (property.PropertyType == typeof(string) && property.Name == "Name")
+        return FilterBy.Unknown;
+      if (property.PropertyType == typeof(string) && property.Name == "Name" && typeof(MemberDescriptorBase).IsAssignableFrom(property.DeclaringType))
         return FilterBy.Name;
+      if (property.PropertyType == typeof(Type) && property.Name == "Type" && typeof(MemberDescriptorBase).IsAssignableFrom(property.DeclaringType))
+        return FilterBy.Type;
       if (PropertyTypes.ContainsKey(property.PropertyType))
         return PropertyTypes[property.PropertyType];
-      return FilterBy.Empty;
+      return FilterBy.Unknown;
     }
   }
 }

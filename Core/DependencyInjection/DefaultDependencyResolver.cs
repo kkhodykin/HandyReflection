@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HandyReflection.Core.Accessors;
 
 namespace HandyReflection.Core.DependencyInjection
 {
@@ -15,6 +16,9 @@ namespace HandyReflection.Core.DependencyInjection
   {
     public object GetService(Type serviceType)
     {
+      if (serviceType == typeof (IAccessorProvider))
+        return new AccessorProvider();
+
       throw new NotImplementedException();
     }
 

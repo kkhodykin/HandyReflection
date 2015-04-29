@@ -21,23 +21,16 @@ namespace HandyReflection.Core.Tests
     {
 
       var initialQuery = new MemberAccessor<MemberDescriptor>();
-//      var query = initialQuery.Where(x => x.AccessMode == MemberAccessMode.Instance).ToList();
+      //var query = initialQuery.Where(x => x.AccessMode == MemberAccessMode.Instance).ToList();
 
       var query1 =
         initialQuery.Where(
           x =>
-            x.MemberTypes == MemberTypes.Method && x.AccessMode == MemberAccessMode.Instance &&
-            x.Visibility == MemberVisibility.NonPublic && x.MemberInfo.Name == "Test").ToList();
-
-      //var visitor = new ReflectionVisitor<MemberBaseVisitor>();
-      //var expression = visitor.Visit(query.Expression);
-      //Assert.AreEqual(visitor.Filter.BindingFlags, BindingFlags.Instance, "SimpleFilterFailed");
-
-      
-
-      //visitor = new ReflectionVisitor<MemberBaseVisitor>();
-      //expression = visitor.Visit(query.Expression);
-      //Assert.AreEqual(visitor.Filter.BindingFlags, BindingFlags.Instance | BindingFlags.NonPublic, "Complex fileter failed");
+            x.MemberTypes == MemberTypes.Property 
+            && x.AccessMode == MemberAccessMode.Instance 
+            && (x.Visibility == MemberVisibility.NonPublic || x.Visibility == MemberVisibility.Public)
+            && x.Name == "Test"
+            ).ToList();
     }
   }
 }
