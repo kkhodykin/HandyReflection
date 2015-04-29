@@ -11,6 +11,7 @@ namespace HandyReflection.Core.Accessors
   class MemberAccessor<TDescriptor> : IMemberAccessor<TDescriptor>
   {
     public object Instance { get; private set; }
+		protected TDescriptor Descriptor { get; private set; }
 
     public MemberAccessor()
     {

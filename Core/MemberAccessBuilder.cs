@@ -9,7 +9,7 @@ namespace HandyReflection.Core
 {
   public interface IMemberAccessBuilder
   {
-    IQueryable<MethodDescriptor> Method(string methodName);
+    IMethodAccessor Method(string methodName);
     IQueryable<MethodDescriptor> Methods();
     IQueryable<PropertyDescriptor> Property(string propertyName);
     IQueryable<PropertyDescriptor> Properties();
@@ -33,7 +33,7 @@ namespace HandyReflection.Core
       _instance = instance;
     }
 
-    public IQueryable<MethodDescriptor> Method(string methodName)
+    public IMethodAccessor Method(string methodName)
     {
       return _accessorProvider.GetAccessor<IMethodAccessor>().Where(x => x.Name == methodName);
     }

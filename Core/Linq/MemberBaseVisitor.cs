@@ -59,7 +59,7 @@ namespace HandyReflection.Core.Linq
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
       if (node.Method.Name == "Where")
-      {
+    {
         WhereClauseVisitor.Visit(node.Arguments[1], _filterAggregator);
       }
       return base.VisitMethodCall(node);
@@ -82,4 +82,4 @@ namespace HandyReflection.Core.Linq
   //    WhereClauseVisitor.Visit(whereClause.Predicate, _filterAggregator);
   //    base.VisitWhereClause(whereClause, queryModel, index);
   //  }
-  }
+}

@@ -3,11 +3,19 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HandyReflection.Core.Descriptors;
 
 namespace HandyReflection.Core
 {
   public class MemberCacheDescriptor
   {
+		public const BindingFlags DefaultFlags = BindingFlags.Instance | BindingFlags.Public;
+	  public const BindingFlags StaticFlags = BindingFlags.Static | BindingFlags.Public;
+	  public const BindingFlags NonPublicFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+	  public const BindingFlags StaticNonPublicFlags = BindingFlags.Static | BindingFlags.NonPublic;
+	  public const BindingFlags AnyMemberFlags =
+		  BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
     public Type Type { get; set; }
     public string Name { get; set; }
     public MemberTypes MemberTypes { get; set; }
@@ -16,8 +24,45 @@ namespace HandyReflection.Core
     public MemberCacheDescriptor()
     {
       MemberTypes = MemberTypes.All;
-      BindingFlags = BindingFlags.Default;
+	    BindingFlags = DefaultFlags;
     }
+
+    public MemberCacheDescriptor(MemberDescriptorBase descriptor)
+    {
+	    MemberTypes = descriptor.MemberTypes;
+	    BindingFlags = GetFlags(descriptor.AccessMode) | GetFlags(descriptor.Visibility);
+	    Type = descriptor.Type;
+	    Name = descriptor.Name;
+    }
+
+	  private BindingFlags GetFlags(MemberAccessMode accessMode)
+	  {
+		  switch (accessMode)
+		  {
+			  case MemberAccessMode.Any:
+				  return BindingFlags.Instance | BindingFlags.Static;
+			  case MemberAccessMode.Instance:
+				  return BindingFlags.Instance;
+			  case MemberAccessMode.Static:
+				  return BindingFlags.Static;
+		  }
+		  return DefaultFlags;
+	  }
+
+	  private BindingFlags GetFlags(MemberVisibility accessMode)
+	  {
+		  switch (accessMode)
+		  {
+			  case MemberVisibility.Any:
+				  return BindingFlags.Public | BindingFlags.NonPublic;
+			  case MemberVisibility.Public:
+				  return BindingFlags.Public;
+			  case MemberVisibility.NonPublic:
+				  return BindingFlags.NonPublic;
+		  }
+
+		  return DefaultFlags;
+	  }
 
     public MemberCacheDescriptor(Type type, string name)
       : this()

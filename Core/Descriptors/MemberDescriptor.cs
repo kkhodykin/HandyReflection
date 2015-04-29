@@ -8,12 +8,12 @@ namespace HandyReflection.Core.Descriptors
 {
   public enum MemberVisibility
   {
-    Public = 1, NonPublic = 2
+    Any = 0, Public = 1, NonPublic = 2
   }
 
   public enum MemberAccessMode
   {
-    Instance = 3, Static = 4
+    Any = 0, Instance = 1, Static = 2
   }
 
   public abstract class ReflectionDescriptorBase
@@ -27,11 +27,11 @@ namespace HandyReflection.Core.Descriptors
   {
     public string Name { get; internal set; }
     public Type Type { get; internal set; }
+    public MemberTypes MemberTypes { get; internal set; }
   }
 
   public class MemberDescriptor : MemberDescriptorBase
   {
     public MemberInfo MemberInfo { get; internal set; }
-    public MemberTypes MemberTypes { get; internal set; }
   }
 }

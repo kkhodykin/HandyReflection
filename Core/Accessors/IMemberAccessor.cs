@@ -11,7 +11,7 @@ namespace HandyReflection.Core.Accessors
     IAccessor SetInstance(object instance);
   }
 
-  internal interface IMemberAccessor<TDescriptor> : IAccessor, IQueryable<TDescriptor>
+	public interface IMemberAccessor<TDescriptor> : IAccessor
 //    where TDescriptor : ReflectionDescriptorBase
   {
     TAccessor SetInstance<TAccessor>(object instance) where TAccessor : IMemberAccessor<TDescriptor>;
